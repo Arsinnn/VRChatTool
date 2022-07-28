@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,9 +11,6 @@ import (
 )
 
 func main() {
-	sha := sha256.New()
-	sha.Write([]byte("s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2s2"))
-	fmt.Println(sha.Sum([]byte("s")))
 	Start()
 }
 
