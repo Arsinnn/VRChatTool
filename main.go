@@ -21,12 +21,6 @@ func Start() {
 	if _, err := os.Stat("Authcookie.txt"); errors.Is(err, os.ErrNotExist) {
 		os.Create("Authcookie.txt")
 	}
-	if _, err := os.Stat("Authcookies.txt"); errors.Is(err, os.ErrNotExist) {
-		os.Create("Authcookies.txt")
-	}
-	if _, err := os.Stat("Avatars.txt"); errors.Is(err, os.ErrNotExist) {
-		os.Create("Avatars.txt")
-	}
 	joe, _ := os.ReadFile("Authcookie.txt")
 	if !(strings.Contains(string(joe), "authcookie_")) {
 		fmt.Println("authcookie not found enter your authcookie")
