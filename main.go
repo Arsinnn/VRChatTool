@@ -21,6 +21,12 @@ func Start() {
 	if _, err := os.Stat("Authcookie.txt"); errors.Is(err, os.ErrNotExist) {
 		os.Create("Authcookie.txt")
 	}
+	if _, err := os.Stat("Authcookies.txt"); errors.Is(err, os.ErrNotExist) {
+		os.Create("Authcookies.txt")
+	}
+	if _, err := os.Stat("Avatars.txt"); errors.Is(err, os.ErrNotExist) {
+		os.Create("Avatars.txt")
+	}
 	joe, _ := os.ReadFile("Authcookie.txt")
 	if !(strings.Contains(string(joe), "authcookie_")) {
 		fmt.Println("authcookie not found enter your authcookie")
@@ -30,7 +36,7 @@ func Start() {
 	joe2, _ := os.ReadFile("Authcookie.txt")
 	authcookie = string(joe2)
 	fmt.Println("-----Pick a option-----")
-	fmt.Println("1: Request spam UserID")
+	fmt.Println("1: Request spam UserID\n2: World spoof\n3: Quest Spoof\n4: Request spam multi")
 	var Input string
 	fmt.Scanln(&Input)
 	switch Input {
@@ -52,7 +58,7 @@ func Start() {
 func RequestSpam(UserID string) {
 	client := http.Client{}
 	for i := 0; i < 25; i++ {
-		request, _ := http.NewRequest("POST", "https://api.vrchat.cloud/api/1/requestInvite/"+UserID, nil)
+		request, _ := http.NewRequest("POST", "https://api.vrchat.cloud/api/1/requestInvite/"+UserID, strings.NewReader("{\"platform\":\"standalonewindows\"}"))
 		request.Header.Add("Cookie", "apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; auth="+authcookie)
 		request.Header.Add("X-Client-Version", "2022.2.2-1213--Release")
 		request.Header.Add("X-Platform", "standalonewindows")
