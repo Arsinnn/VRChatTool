@@ -36,7 +36,7 @@ func Start() {
 	joe2, _ := os.ReadFile("Authcookie.txt")
 	authcookie = string(joe2)
 	fmt.Println("-----Pick a option-----")
-	fmt.Println("1: Request spam UserID\n2: World spoof\n3: Quest Spoof\n4: Request spam multi")
+	fmt.Println("1: Request spam UserID")
 	var Input string
 	fmt.Scanln(&Input)
 	switch Input {
