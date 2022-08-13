@@ -60,7 +60,7 @@ func RequestSpam(UserID string) {
 			"Content-Type":     {"application/json"},
 			"User-Agent":       {"Transmtn-Pipeline"},
 			"Host":             {"api.vrchat.cloud"},
-		} //usr_109eea18-026e-4fc8-9b55-ad4293b91672
+		}
 		response, _ := client.Do(request)
 		fmt.Println(response.Status)
 	}
