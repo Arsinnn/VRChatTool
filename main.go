@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-var authcookie string
-
 func main() {
 	ReadFile, _ := os.ReadFile("Account.txt")
 	if string(ReadFile) == "" {
@@ -20,8 +18,10 @@ func main() {
 		fmt.Scanln(&UserPass)
 		os.WriteFile("Account.txt", []byte(UserPass), 0)
 	}
-	GetAuthCookie()
+	GetAuthCookie(ReadFile)
 }
+
+var authcookie string
 
 func Start() {
 	fmt.Println("-----Pick a option-----")
@@ -60,7 +60,7 @@ func RequestSpam(UserID string) {
 			"Content-Type":     {"application/json"},
 			"User-Agent":       {"Transmtn-Pipeline"},
 			"Host":             {"api.vrchat.cloud"},
-		}
+		} //usr_109eea18-026e-4fc8-9b55-ad4293b91672
 		response, _ := client.Do(request)
 		fmt.Println(response.Status)
 	}
@@ -81,7 +81,7 @@ func UserSearch(UserID string) {
 		"Connection":       {"Keep-Alive, TE"},
 		"TE":               {"identity"},
 		"User-Agent":       {"VRC.Core.BestHTTP"},
-		"Cookie":           {"auth=; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
+		"Cookie":           {"auth=" + authcookie + "; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
 		"accept":           {"*/*"},
 		"Accept-Encoding":  {"identity"},
 	}
@@ -93,8 +93,7 @@ func UserSearch(UserID string) {
 	}
 }
 
-func GetAuthCookie() {
-	ReadFile, _ := os.ReadFile("Account.txt")
+func GetAuthCookie(Account []byte) {
 	client := &http.Client{}
 	request, _ := http.NewRequest("GET", "https://api.vrchat.cloud/api/1/auth/user?apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26&organization=vrchat", nil)
 	request.Header = http.Header{
@@ -109,11 +108,12 @@ func GetAuthCookie() {
 		"Connection":       {"Keep-Alive, TE"},
 		"TE":               {"identity"},
 		"User-Agent":       {"VRC.Core.BestHTTP"},
-		"Authorization":    {"Basic " + base64.StdEncoding.EncodeToString(ReadFile)},
+		"Authorization":    {"Basic " + base64.StdEncoding.EncodeToString(Account)},
 		"Cookie":           {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
 		"Accept-Encoding":  {"identity"},
 	}
 	response, _ := client.Do(request)
+	fmt.Println(response.Status)
 	body, _ := io.ReadAll(response.Body)
 	Format2 := strings.Split(string(body), "\"")
 	fmt.Println("Logged in as: " + Format2[11])
