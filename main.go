@@ -4,11 +4,15 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 )
+
+var authcookie string
+var DefaultClient = &http.Client{Timeout: time.Second * 10}
 
 func main() {
 	ReadFile, _ := os.ReadFile("Account.txt")
@@ -20,8 +24,6 @@ func main() {
 	}
 	GetAuthCookie(ReadFile)
 }
-
-var authcookie string
 
 func Start() {
 	fmt.Println("-----Pick a option-----")
@@ -50,7 +52,6 @@ func Start() {
 }
 
 func RequestSpam(UserID string) {
-	client := &http.Client{}
 	for i := 0; i < 25; i++ {
 		request, _ := http.NewRequest("POST", "https://api.vrchat.cloud/api/1/requestInvite/"+UserID, strings.NewReader("{\"platform\":\"standalonewindows\"}"))
 		request.Header = http.Header{
@@ -61,31 +62,25 @@ func RequestSpam(UserID string) {
 			"User-Agent":       {"Transmtn-Pipeline"},
 			"Host":             {"api.vrchat.cloud"},
 		}
-		response, _ := client.Do(request)
+		response, _ := DefaultClient.Do(request)
 		fmt.Println(response.Status)
 	}
 }
 
 func UserSearch(UserID string) {
-	client := &http.Client{}
 	request, _ := http.NewRequest("GET", "https://api.vrchat.cloud/api/1/users/"+UserID+"?apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26&organization=vrchat", nil)
 	request.Header = http.Header{
-		"X-Requested-With": {"XMLHttpRequest"},
-		"X-Macaddress":     {"3ceb8cc8df874eeba6ff679158315ec54f1470eb"},
-		"X-Client-Version": {"2022.2.2p2c-1221--Release"},
-		"X-Platform":       {"standalonewindows"},
-		"X-Unity-Version":  {"2019.4.31f1"},
-		"Content-Type":     {"application/x-www-form-urlencoded"},
-		"Origin":           {"vrchat.com"},
-		"Host":             {"api.vrchat.cloud"},
-		"Connection":       {"Keep-Alive, TE"},
-		"TE":               {"identity"},
-		"User-Agent":       {"VRC.Core.BestHTTP"},
-		"Cookie":           {"auth=" + authcookie + "; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
-		"accept":           {"*/*"},
-		"Accept-Encoding":  {"identity"},
+		"Content-Type":    {"application/x-www-form-urlencoded"},
+		"Origin":          {"vrchat.com"},
+		"Host":            {"api.vrchat.cloud"},
+		"Connection":      {"Keep-Alive, TE"},
+		"TE":              {"identity"},
+		"User-Agent":      {"VRC.Core.BestHTTP"},
+		"Cookie":          {"auth=" + authcookie + "; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
+		"accept":          {"*/*"},
+		"Accept-Encoding": {"identity"},
 	}
-	response, _ := client.Do(request)
+	response, _ := DefaultClient.Do(request)
 	body, _ := io.ReadAll(response.Body)
 	Formated := strings.Split(string(body), ",")
 	for i := 0; i < len(Formated); i++ {
@@ -94,29 +89,21 @@ func UserSearch(UserID string) {
 }
 
 func GetAuthCookie(Account []byte) {
-	client := &http.Client{}
 	request, _ := http.NewRequest("GET", "https://api.vrchat.cloud/api/1/auth/user?apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26&organization=vrchat", nil)
 	request.Header = http.Header{
-		"X-Requested-With": {"XMLHttpRequest"},
-		"X-MacAddress":     {"3ceb8cc8df874eeba6ff679158315ec54f1470eb"},
-		"X-Client-Version": {"2022.2.2p2c-1221--Release"},
-		"X-Platform":       {"standalonewindows"},
-		"X-Unity-Version":  {"2019.4.31f1"},
-		"Content-Type":     {"application/x-www-form-urlencoded"},
-		"Origin":           {"vrchat.com"},
-		"Host":             {"api.vrchat.cloud"},
-		"Connection":       {"Keep-Alive, TE"},
-		"TE":               {"identity"},
-		"User-Agent":       {"VRC.Core.BestHTTP"},
-		"Authorization":    {"Basic " + base64.StdEncoding.EncodeToString(Account)},
-		"Cookie":           {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
-		"Accept-Encoding":  {"identity"},
+		"Content-Type":    {"application/x-www-form-urlencoded"},
+		"Origin":          {"vrchat.com"},
+		"Host":            {"api.vrchat.cloud"},
+		"User-Agent":      {"VRC.Core.BestHTTP"},
+		"Authorization":   {"Basic " + base64.StdEncoding.EncodeToString(Account)},
+		"Cookie":          {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26;"},
+		"Accept-Encoding": {"identity"},
 	}
-	response, _ := client.Do(request)
+	response, _ := DefaultClient.Do(request)
 	fmt.Println(response.Status)
 	body, _ := io.ReadAll(response.Body)
-	Format2 := strings.Split(string(body), "\"")
-	fmt.Println("Logged in as: " + Format2[11])
+	format := strings.Split(string(body), "\"")
+	log.Println("Logged in as: " + format[11])
 	authcookie = response.Cookies()[0].Value
 	Start()
 }
