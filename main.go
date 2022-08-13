@@ -81,7 +81,7 @@ func UserSearch(UserID string) {
 		"Connection":       {"Keep-Alive, TE"},
 		"TE":               {"identity"},
 		"User-Agent":       {"VRC.Core.BestHTTP"},
-		"Cookie":           {"auth=authcookie_be4ed7e6-f192-4ea8-87ed-cc8da07d0124; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
+		"Cookie":           {"auth=; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
 		"accept":           {"*/*"},
 		"Accept-Encoding":  {"identity"},
 	}
