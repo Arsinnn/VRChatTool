@@ -99,8 +99,7 @@ func InviteSpam(UserID string) {
 		request.Header = http.Header{"Cookie": {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; auth=" + authcookie},
 			"Content-Type": {"application/json"},
 			"User-Agent":   {"Transmtn-Pipeline"},
-			//"Expect":       {"100-continue"},
-			"Host": {"api.vrchat.cloud"},
+			"Host":         {"api.vrchat.cloud"},
 		}
 		response, _ := DefaultClient.Do(request)
 		fmt.Println(response.Status)
