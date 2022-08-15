@@ -226,5 +226,3 @@ func FriendRequest(authcookie string, Client *http.Client) {
 	body, _ := io.ReadAll(response.Body)
 	fmt.Println(response.Status, string(body))
 }
-
-//
