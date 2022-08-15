@@ -79,7 +79,7 @@ func Start() {
 	case "4":
 		fmt.Scanln(&UserID)
 		GetAuthCookies()
-		for i := 0; i < len(UserPass); i++ {
+		for i := 0; i < len(authcookies); i++ {
 			Proxy := strings.Split(Proxys[i], ":")
 			if len(Proxy) == 4 {
 				FriendRequest(authcookies[i], &http.Client{Transport: &http.Transport{
@@ -208,9 +208,12 @@ func AddAuthCookie(Account []byte, Client *http.Client) {
 	response, _ := Client.Do(request)
 	body, _ := io.ReadAll(response.Body)
 	format := strings.Split(string(body), "\"")
-	log.Printf("[FriendSpam] | %v | Logged in as: %v", response.Status, format[11])
-	authcookies = append(authcookies, response.Cookies()[0].Value)
-
+	if response.StatusCode == 200 {
+		log.Printf("[FriendSpam] | %v | Logged in as: %v", response.Status, format[11])
+		authcookies = append(authcookies, response.Cookies()[0].Value)
+	} else {
+		log.Println(response.Status, string(body))
+	}
 }
 
 func FriendRequest(authcookie string, Client *http.Client) {
@@ -220,5 +223,6 @@ func FriendRequest(authcookie string, Client *http.Client) {
 		"User-Agent": {"VRC.Core.BestHTTP"},
 	}
 	response, _ := Client.Do(request)
-	fmt.Println(response.Status)
+	body, _ := io.ReadAll(response.Body)
+	fmt.Println(response.Status, string(body))
 }
