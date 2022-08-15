@@ -1,34 +1,60 @@
 package main
 
 import (
+	"bufio"
 	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 )
 
 var authcookie string
+
 var UserID string
-var DefaultClient = &http.Client{Timeout: time.Second * 10}
+var DefaultClient = &http.Client{Timeout: 10 * time.Second}
+
+var Proxys []string
+var UserPass []string
+var authcookies []string
 
 func main() {
-	ReadFile, _ := os.ReadFile("Account.txt")
-	if string(ReadFile) == "" {
-		fmt.Println("Couldn't find account\nEnter your account info in user:password format")
-		var UserPass string
-		fmt.Scanln(&UserPass)
-		os.WriteFile("Account.txt", []byte(UserPass), 0)
-	}
-	GetAuthCookie(ReadFile)
+	FileCheck()
 }
-
+func FileCheck() {
+	Files := []string{"Account.txt", "Proxys.txt", "Accounts.txt"}
+	for i := 0; i < len(Files); i++ {
+		ReadFile, _ := os.ReadFile(Files[i])
+		if string(ReadFile) == "" {
+			if i == 0 {
+				fmt.Println("Couldn't find account\nEnter your account info in user:password format")
+				var UserPass string
+				fmt.Scanln(&UserPass)
+				os.WriteFile(Files[i], []byte(UserPass), 0)
+			} else {
+				os.Create(Files[i])
+			}
+		}
+	}
+	Scanne("Proxys.txt", &Proxys)
+	Scanne("Accounts.txt", &UserPass)
+	Details, _ := os.ReadFile(Files[0])
+	GetAuthCookie(Details)
+}
+func Scanne(F string, S *[]string) {
+	File, _ := os.Open(F)
+	Scanner := bufio.NewScanner(File)
+	for Scanner.Scan() {
+		*S = append(*S, Scanner.Text())
+	}
+}
 func Start() {
 	fmt.Println("-----Pick a option-----")
-	fmt.Println("1: Request spam UserID\n2: UserID lookup\n3: Invite spam UserID")
+	fmt.Println("1: Request spam UserID\n2: UserID lookup\n3: Invite spam UserID\n4: Friend spam UserID using proxies and VRChat accounts")
 	var Input string
 	fmt.Scanln(&Input)
 	switch Input {
@@ -50,6 +76,28 @@ func Start() {
 			go InviteSpam(UserID)
 		}
 		InviteSpam(UserID)
+	case "4":
+		fmt.Scanln(&UserID)
+		GetAuthCookies()
+		for i := 0; i < len(UserPass); i++ {
+			Proxy := strings.Split(Proxys[i], ":")
+			if len(Proxy) == 4 {
+				FriendRequest(authcookies[i], &http.Client{Transport: &http.Transport{
+					Proxy: http.ProxyURL(&url.URL{
+						Scheme: "http",
+						Host:   Proxy[0] + ":" + Proxy[1],
+						User:   url.UserPassword(Proxy[2], Proxy[3]),
+					}),
+				}})
+			} else {
+				FriendRequest(authcookies[i], &http.Client{Transport: &http.Transport{
+					Proxy: http.ProxyURL(&url.URL{
+						Scheme: "http",
+						Host:   Proxy[0] + ":" + Proxy[1],
+					}),
+				}})
+			}
+		}
 	default:
 		fmt.Println("Pick a valid option")
 		time.Sleep(3 * time.Second)
@@ -119,7 +167,58 @@ func GetAuthCookie(Account []byte) {
 	response, _ := DefaultClient.Do(request)
 	body, _ := io.ReadAll(response.Body)
 	format := strings.Split(string(body), "\"")
-	log.Println("|", response.Status, "| Logged in as: "+format[11])
+	log.Printf("| %v | Logged in as: %v", response.Status, format[11])
 	authcookie = response.Cookies()[0].Value
 	Start()
+}
+func GetAuthCookies() {
+	if authcookies == nil {
+		for i := 0; i < len(UserPass); i++ {
+			Proxy := strings.Split(Proxys[i], ":")
+			if len(Proxy) == 4 {
+				AddAuthCookie([]byte(UserPass[i]), &http.Client{Transport: &http.Transport{
+					Proxy: http.ProxyURL(&url.URL{
+						Scheme: "http",
+						Host:   Proxy[0] + ":" + Proxy[1],
+						User:   url.UserPassword(Proxy[2], Proxy[3]),
+					}),
+				}})
+			} else {
+				AddAuthCookie([]byte(UserPass[i]), &http.Client{Transport: &http.Transport{
+					Proxy: http.ProxyURL(&url.URL{
+						Scheme: "http",
+						Host:   Proxy[0] + ":" + Proxy[1],
+					}),
+				}})
+			}
+		}
+	}
+}
+func AddAuthCookie(Account []byte, Client *http.Client) {
+	request, _ := http.NewRequest("GET", "https://api.vrchat.cloud/api/1/auth/user?apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26&organization=vrchat", nil)
+	request.Header = http.Header{
+		"Content-Type":    {"application/x-www-form-urlencoded"},
+		"Origin":          {"vrchat.com"},
+		"Host":            {"api.vrchat.cloud"},
+		"User-Agent":      {"VRC.Core.BestHTTP"},
+		"Authorization":   {"Basic " + base64.StdEncoding.EncodeToString(Account)},
+		"Cookie":          {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26;"},
+		"Accept-Encoding": {"identity"},
+	}
+	response, _ := Client.Do(request)
+	body, _ := io.ReadAll(response.Body)
+	format := strings.Split(string(body), "\"")
+	log.Printf("[FriendSpam] | %v | Logged in as: %v", response.Status, format[11])
+	authcookies = append(authcookies, response.Cookies()[0].Value)
+
+}
+
+func FriendRequest(authcookie string, Client *http.Client) {
+	request, _ := http.NewRequest("POST", "https://api.vrchat.cloud/api/1/user/"+UserID+"/friendRequest", nil)
+	request.Header = http.Header{
+		"Cookie":     {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; auth=" + authcookie},
+		"User-Agent": {"VRC.Core.BestHTTP"},
+	}
+	response, _ := Client.Do(request)
+	fmt.Println(response.Status)
 }
