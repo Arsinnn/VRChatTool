@@ -54,40 +54,43 @@ func Scanne(F string, S *[]string) {
 	}
 }
 func Start() {
-	fmt.Println("-----Pick a option-----")
-	fmt.Println("1: Request spam UserID\n2: UserID lookup\n3: Invite spam UserID\n4: Friend spam UserID using proxies and VRChat accounts")
-	var Input string
-	fmt.Scanln(&Input)
-	switch Input {
-	case "1":
-		fmt.Println("Enter UserID to request spam")
-		fmt.Scanln(&UserID)
-		for i := 0; i < 9; i++ {
-			go RequestSpam(UserID)
+	for {
+		fmt.Println("-----Pick a option-----")
+		fmt.Println("1: Request spam UserID\n2: UserID lookup\n3: Invite spam UserID\n4: Friend spam UserID using proxies and VRChat accounts")
+		var Input string
+		fmt.Scanln(&Input)
+
+		switch Input {
+		case "1":
+			fmt.Println("Enter UserID to request spam")
+			fmt.Scanln(&UserID)
+			for i := 0; i < 9; i++ {
+				go RequestSpam(UserID)
+			}
+			RequestSpam(UserID)
+		case "2":
+			fmt.Println("Enter UserID to lookup")
+			fmt.Scanln(&UserID)
+			UserSearch(UserID)
+		case "3":
+			fmt.Println("Enter UserID to Invite spam")
+			fmt.Scanln(&UserID)
+			for i := 0; i < 9; i++ {
+				go InviteSpam(UserID)
+			}
+			InviteSpam(UserID)
+		case "4":
+			fmt.Println("Enter a UserID to Friend request spam")
+			fmt.Scanln(&UserID)
+			GetAuthCookies()
+			for i := 0; i < len(authcookies); i++ {
+				Proxy := strings.Split(Proxys[i], ":")
+				FriendRequest(authcookies[i], ProxyC(Proxy))
+			}
+		default:
+			fmt.Println("Pick a valid option")
+			time.Sleep(3 * time.Second)
 		}
-		RequestSpam(UserID)
-	case "2":
-		fmt.Println("Enter UserID to lookup")
-		fmt.Scanln(&UserID)
-		UserSearch(UserID)
-	case "3":
-		fmt.Println("Enter UserID to Invite spam")
-		fmt.Scanln(&UserID)
-		for i := 0; i < 9; i++ {
-			go InviteSpam(UserID)
-		}
-		InviteSpam(UserID)
-	case "4":
-		fmt.Scanln(&UserID)
-		GetAuthCookies()
-		for i := 0; i < len(authcookies); i++ {
-			Proxy := strings.Split(Proxys[i], ":")
-			FriendRequest(authcookies[i], ProxyC(Proxy))
-		}
-	default:
-		fmt.Println("Pick a valid option")
-		time.Sleep(3 * time.Second)
-		Start()
 	}
 }
 func ProxyC(Proxy []string) *http.Client {
@@ -133,7 +136,6 @@ func UserSearch(UserID string) {
 	for i := 0; i < len(Formated); i++ {
 		fmt.Println(Formated[i])
 	}
-	Start()
 }
 func InviteSpam(UserID string) {
 	for i := 0; i < 150/10; i++ {
