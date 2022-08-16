@@ -124,14 +124,8 @@ func RequestSpam(UserID string) {
 func UserSearch(UserID string) {
 	request, _ := http.NewRequest("GET", "https://api.vrchat.cloud/api/1/users/"+UserID+"?apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26&organization=vrchat", nil)
 	request.Header = http.Header{
-		"Content-Type":    {"application/x-www-form-urlencoded"},
-		"Origin":          {"vrchat.com"},
-		"Host":            {"api.vrchat.cloud"},
-		"TE":              {"identity"},
-		"User-Agent":      {"VRC.Core.BestHTTP"},
-		"Cookie":          {"auth=" + authcookie + "; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
-		"Accept":          {"*/*"},
-		"Accept-Encoding": {"identity"},
+		"User-Agent": {"VRC.Core.BestHTTP"},
+		"Cookie":     {"auth=" + authcookie + "; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
 	}
 	response, _ := DefaultClient.Do(request)
 	body, _ := io.ReadAll(response.Body)
@@ -176,11 +170,7 @@ func GetAuthCookies() {
 		for i := 0; i < len(UserPass); i++ {
 			Proxy := strings.Split(Proxys[i], ":")
 			fmt.Println(UserPass[i])
-			if len(Proxy) == 4 {
-				AddAuthCookie([]byte(UserPass[i]), ProxyC(Proxy))
-			} else {
-				AddAuthCookie([]byte(UserPass[i]), ProxyC(Proxy))
-			}
+			AddAuthCookie([]byte(UserPass[i]), ProxyC(Proxy))
 		}
 	}
 }
