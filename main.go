@@ -25,6 +25,7 @@ var authcookies []string
 func main() {
 	FileCheck()
 }
+
 func FileCheck() {
 	Files := []string{"Account.txt", "Proxys.txt", "Accounts.txt"}
 	for i := 0; i < len(Files); i++ {
@@ -81,22 +82,7 @@ func Start() {
 		GetAuthCookies()
 		for i := 0; i < len(authcookies); i++ {
 			Proxy := strings.Split(Proxys[i], ":")
-			if len(Proxy) == 4 {
-				FriendRequest(authcookies[i], &http.Client{Transport: &http.Transport{
-					Proxy: http.ProxyURL(&url.URL{
-						Scheme: "http",
-						Host:   Proxy[0] + ":" + Proxy[1],
-						User:   url.UserPassword(Proxy[2], Proxy[3]),
-					}),
-				}})
-			} else {
-				FriendRequest(authcookies[i], &http.Client{Transport: &http.Transport{
-					Proxy: http.ProxyURL(&url.URL{
-						Scheme: "http",
-						Host:   Proxy[0] + ":" + Proxy[1],
-					}),
-				}})
-			}
+			FriendRequest(authcookies[i], ProxyC(Proxy))
 		}
 	default:
 		fmt.Println("Pick a valid option")
@@ -104,17 +90,31 @@ func Start() {
 		Start()
 	}
 }
-
+func ProxyC(Proxy []string) *http.Client {
+	if len(Proxy) == 4 {
+		return &http.Client{Transport: &http.Transport{
+			Proxy: http.ProxyURL(&url.URL{
+				Scheme: "http",
+				Host:   Proxy[0] + ":" + Proxy[1],
+				User:   url.UserPassword(Proxy[2], Proxy[3]),
+			}),
+		}}
+	}
+	return &http.Client{Transport: &http.Transport{
+		Proxy: http.ProxyURL(&url.URL{
+			Scheme: "http",
+			Host:   Proxy[0] + ":" + Proxy[1],
+		}),
+	}}
+}
 func RequestSpam(UserID string) {
 	for i := 0; i < 150/10; i++ {
 		request, _ := http.NewRequest("POST", "https://api.vrchat.cloud/api/1/requestInvite/"+UserID, strings.NewReader("{\"platform\":\"standalonewindows\"}"))
 		request.Header = http.Header{
-			"Cookie":           {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; auth=" + authcookie},
-			"X-Client-Version": {"2022.2.2-1213--Release"},
-			"X-Platform":       {"standalonewindows"},
-			"Content-Type":     {"application/json"},
-			"User-Agent":       {"Transmtn-Pipeline"},
-			"Host":             {"api.vrchat.cloud"},
+			"Cookie":       {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; auth=" + authcookie},
+			"Content-Type": {"application/json"},
+			"User-Agent":   {"Transmtn-Pipeline"},
+			"Host":         {"api.vrchat.cloud"},
 		}
 		response, _ := DefaultClient.Do(request)
 		fmt.Println(response.Status)
@@ -175,21 +175,11 @@ func GetAuthCookies() {
 	if authcookies == nil {
 		for i := 0; i < len(UserPass); i++ {
 			Proxy := strings.Split(Proxys[i], ":")
+			fmt.Println(UserPass[i])
 			if len(Proxy) == 4 {
-				AddAuthCookie([]byte(UserPass[i]), &http.Client{Transport: &http.Transport{
-					Proxy: http.ProxyURL(&url.URL{
-						Scheme: "http",
-						Host:   Proxy[0] + ":" + Proxy[1],
-						User:   url.UserPassword(Proxy[2], Proxy[3]),
-					}),
-				}})
+				AddAuthCookie([]byte(UserPass[i]), ProxyC(Proxy))
 			} else {
-				AddAuthCookie([]byte(UserPass[i]), &http.Client{Transport: &http.Transport{
-					Proxy: http.ProxyURL(&url.URL{
-						Scheme: "http",
-						Host:   Proxy[0] + ":" + Proxy[1],
-					}),
-				}})
+				AddAuthCookie([]byte(UserPass[i]), ProxyC(Proxy))
 			}
 		}
 	}
