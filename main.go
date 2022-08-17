@@ -13,14 +13,14 @@ import (
 	"time"
 )
 
-var authcookie string
-
-var UserID string
-var DefaultClient = &http.Client{Timeout: 10 * time.Second}
-
-var Proxys []string
-var UserPass []string
-var authcookies []string
+var (
+	DefaultClient = &http.Client{Timeout: 10 * time.Second}
+	authcookie    string
+	UserID        string
+	Proxys        []string
+	UserPass      []string
+	authcookies   []string
+)
 
 func main() {
 	FileCheck()
@@ -56,7 +56,7 @@ func Scanne(F string, S *[]string) {
 func Start() {
 	for {
 		fmt.Println("-----Pick a option-----")
-		fmt.Println("1: Request spam UserID\n2: UserID lookup\n3: Invite spam UserID\n4: Friend spam UserID using proxies and VRChat accounts")
+		fmt.Println("1: Request spam UserID\n2: UserID lookup\n3: Invite spam UserID\n4: Friend spam UserID using proxies and VRChat accounts\n5: Change friendspam accounts avatars")
 		var Input string
 		fmt.Scanln(&Input)
 
@@ -87,6 +87,15 @@ func Start() {
 				Proxy := strings.Split(Proxys[i], ":")
 				FriendRequest(authcookies[i], ProxyC(Proxy))
 			}
+		case "5":
+			var AvatarID string
+			fmt.Println("Enter a AvatarID")
+			fmt.Scanln(&AvatarID)
+			GetAuthCookies()
+			for i := 0; i < len(authcookies); i++ {
+				Proxy := strings.Split(Proxys[i], ":")
+				ChangeAvatar(authcookies[i], AvatarID, ProxyC(Proxy))
+			}
 		default:
 			fmt.Println("Pick a valid option")
 			time.Sleep(3 * time.Second)
@@ -114,10 +123,8 @@ func RequestSpam(UserID string) {
 	for i := 0; i < 150/10; i++ {
 		request, _ := http.NewRequest("POST", "https://api.vrchat.cloud/api/1/requestInvite/"+UserID, strings.NewReader("{\"platform\":\"standalonewindows\"}"))
 		request.Header = http.Header{
-			"Cookie":       {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; auth=" + authcookie},
-			"Content-Type": {"application/json"},
-			"User-Agent":   {"Transmtn-Pipeline"},
-			"Host":         {"api.vrchat.cloud"},
+			"Cookie":     {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; auth=" + authcookie},
+			"User-Agent": {"Transmtn-Pipeline"},
 		}
 		response, _ := DefaultClient.Do(request)
 		fmt.Println(response.Status)
@@ -152,13 +159,8 @@ func InviteSpam(UserID string) {
 func GetAuthCookie(Account []byte) {
 	request, _ := http.NewRequest("GET", "https://api.vrchat.cloud/api/1/auth/user?apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26&organization=vrchat", nil)
 	request.Header = http.Header{
-		"Content-Type":    {"application/x-www-form-urlencoded"},
-		"Origin":          {"vrchat.com"},
-		"Host":            {"api.vrchat.cloud"},
-		"User-Agent":      {"VRC.Core.BestHTTP"},
-		"Authorization":   {"Basic " + base64.StdEncoding.EncodeToString(Account)},
-		"Cookie":          {"apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26;"},
-		"Accept-Encoding": {"identity"},
+		"User-Agent":    {"VRC.Core.BestHTTP"},
+		"Authorization": {"Basic " + base64.StdEncoding.EncodeToString(Account)},
 	}
 	response, _ := DefaultClient.Do(request)
 	body, _ := io.ReadAll(response.Body)
@@ -208,5 +210,13 @@ func FriendRequest(authcookie string, Client *http.Client) {
 	body, _ := io.ReadAll(response.Body)
 	fmt.Println(response.Status, string(body))
 }
-
-//
+func ChangeAvatar(authcookie string, AvatarID string, Client *http.Client) {
+	request, _ := http.NewRequest("PUT", "https://api.vrchat.cloud/api/1/avatars/"+AvatarID+"/select?apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26&organization=vrchat", nil)
+	request.Header = http.Header{
+		"Cookie":     {"auth=" + authcookie + "; apiKey=JlE5Jldo5Jibnk5O5hTx6XVqsJu4WJ26; twoFactorAuth="},
+		"User-Agent": {"VRC.Core.BestHTTP"},
+	}
+	response, _ := Client.Do(request)
+	body, _ := io.ReadAll(response.Body)
+	fmt.Println(response.Status, string(body))
+}
